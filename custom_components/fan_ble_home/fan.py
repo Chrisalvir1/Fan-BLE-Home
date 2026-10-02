@@ -26,7 +26,7 @@ class ZhiKongProFan(FanEntity):
         self._entry = entry
         self._attr_name = entry.title
         self._attr_unique_id = f"{entry.entry_id}_fan"
-        self._attr_supported_features = FanEntityFeature.TURN_ON | FanEntityFeature.TURN_OFF | FanEntityFeature.SET_SPEED
+        self._attr_supported_features = FanEntityFeature.SET_SPEED
         self._is_on = False
         self._percentage = 0
         self._profile = ZhiKongProProfile()

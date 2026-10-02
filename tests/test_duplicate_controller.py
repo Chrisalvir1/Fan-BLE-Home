@@ -73,10 +73,11 @@ async def test_config_flow_full_success(hass: HomeAssistant):
     flow = FanBleHomeConfigFlow()
     flow.hass = hass
     
-    # detect any
-    flow._packet_buffer.append(RawAdvertisement("s1", 1.0, -50, "hci0", b"\x48\x46\x4b\x4a\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"))
-    
-    with patch.object(ZhiKongProProfile, "can_decode", return_value="high"), \
+    async def mock_sleep(*args):
+        flow._packet_buffer.append(RawAdvertisement("s1", 1.0, -50, "hci0", b"\x48\x46\x4b\x4a\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"))
+        
+    with patch("asyncio.sleep", side_effect=mock_sleep), \
+         patch.object(ZhiKongProProfile, "can_decode", return_value="high"), \
          patch.object(ZhiKongProProfile, "extract_config", return_value={"id": 111}):
         result = await flow.async_step_detect_any({"ready": True})
     
