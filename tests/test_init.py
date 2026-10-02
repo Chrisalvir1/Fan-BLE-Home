@@ -9,9 +9,9 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 async def test_setup_multiple_entries_and_unload(hass: HomeAssistant):
     """Test setup of multiple entries and selective unload."""
-    entry1 = MockConfigEntry(domain=DOMAIN, data={"name": "test1"})
+    entry1 = MockConfigEntry(domain=DOMAIN, data={"name": "test1"}, entry_id="id1")
     entry1.add_to_hass(hass)
-    entry2 = MockConfigEntry(domain=DOMAIN, data={"name": "test2"})
+    entry2 = MockConfigEntry(domain=DOMAIN, data={"name": "test2"}, entry_id="id2")
     entry2.add_to_hass(hass)
     
     # Setup first
@@ -38,9 +38,9 @@ async def test_setup_multiple_entries_and_unload(hass: HomeAssistant):
 
 async def test_start_study_no_scanners(hass: HomeAssistant):
     """Test start_study service fails safely when no scanners are available."""
-    entry = MockConfigEntry(domain=DOMAIN, data={"name": "test"})
+    entry = MockConfigEntry(domain=DOMAIN, data={"name": "test"}, entry_id="id3")
     entry.add_to_hass(hass)
-    await hass.config_entries.async_setup(entry.entry_id)
+    assert await hass.config_entries.async_setup(entry.entry_id)
     
     with patch("homeassistant.components.bluetooth.async_scanner_count", return_value=0):
         with pytest.raises(HomeAssistantError, match="No Bluetooth scanners are available"):
