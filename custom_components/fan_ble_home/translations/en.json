@@ -1,0 +1,23 @@
+{
+  "title": "Fan BLE Home",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Store experimental fan configuration",
+        "description": "Configuration only: no BLE discovery, pairing, transmission or entities yet. Enter five comma-separated values (0–255). Their protocol meaning is not verified. Do not publish your shared code.",
+        "data": {
+          "name": "Configuration name",
+          "shared_code": "Shared code (five comma-separated values)",
+          "serial_number": "Physical serial number (optional)"
+        }
+      }
+    },
+    "error": {
+      "invalid_code": "Enter exactly five comma-separated integers between 0 and 255.",
+      "invalid_name": "Enter a non-empty name."
+    },
+    "abort": {
+      "already_configured": "This shared code is already stored."
+    }
+  }
+}
