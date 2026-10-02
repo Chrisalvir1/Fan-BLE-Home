@@ -11,14 +11,14 @@ async def test_setup_multiple_entries_and_unload(hass: HomeAssistant):
     """Test setup of multiple entries and selective unload."""
     entry1 = MockConfigEntry(domain=DOMAIN, data={"name": "test1"}, entry_id="id1")
     entry1.add_to_hass(hass)
-    entry2 = MockConfigEntry(domain=DOMAIN, data={"name": "test2"}, entry_id="id2")
-    entry2.add_to_hass(hass)
     
     # Setup first
     assert await hass.config_entries.async_setup(entry1.entry_id)
     assert hass.services.has_service(DOMAIN, "start_study")
     
     # Setup second
+    entry2 = MockConfigEntry(domain=DOMAIN, data={"name": "test2"}, entry_id="id2")
+    entry2.add_to_hass(hass)
     assert await hass.config_entries.async_setup(entry2.entry_id)
     assert len(hass.data[DOMAIN]["entries"]) == 2
     
