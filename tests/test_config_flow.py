@@ -20,6 +20,7 @@ async def test_form_valid_input_and_normalization(hass: HomeAssistant):
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {"action": "manual"})
     assert result["type"] == FlowResultType.FORM
     assert result["errors"] == {}
 
@@ -45,6 +46,7 @@ async def test_form_invalid_code(hass: HomeAssistant):
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {"action": "manual"})
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"],
         {
@@ -60,6 +62,7 @@ async def test_form_empty_name(hass: HomeAssistant):
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {"action": "manual"})
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"],
         {
@@ -88,8 +91,9 @@ async def test_form_duplicate(hass: HomeAssistant):
 
     # Second entry
     result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": config_entries.SOURCE_USER},
-        data={"name": "Mock Fan 2", CONF_SHARED_CODE: "[010, 20, 30, 40, 50]"}
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {"action": "manual"})
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {"name": "Mock Fan 2", CONF_SHARED_CODE: "[010, 20, 30, 40, 50]"})
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "already_configured"

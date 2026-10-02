@@ -1,18 +1,38 @@
 {
-  "title": "Fan BLE Home",
-  "services": {
-    "start_study": {
-      "name": "Iniciar Estudio BLE",
-      "description": "Inicia una sesi\u00f3n de observaci\u00f3n pasiva y temporal de BLE."
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configurar Fan BLE Home",
+        "data": {
+          "action": "Acción"
+        }
+      },
+      "detect_any": {
+        "title": "Detectar Controlador",
+        "description": "{instructions}",
+        "data": {
+          "retry": "Reintentar"
+        }
+      },
+      "guided_actions": {
+        "title": "Aprender Comandos",
+        "description": "{instructions}"
+      },
+      "validate_blink": {
+        "title": "Validación Física",
+        "description": "{instructions}",
+        "data": {
+          "did_blink": "¿Reaccionó el dispositivo?"
+        }
+      }
     },
-    "stop_study": {
-      "name": "Detener Estudio BLE",
-      "description": "Detiene manualmente la sesi\u00f3n de observaci\u00f3n BLE activa."
-    }
-  },
-  "exceptions": {
-    "no_scanner": {
-      "message": "Sin esc\u00e1ner Bluetooth disponible"
+    "error": {
+      "no_candidate_detected": "No se detectó ningún mando ZhiKong Pro compatible. Asegúrate de presionar el botón."
+    },
+    "abort": {
+      "no_raw_backend": "Fan BLE Home no recibió BLE Raw Advertising desde el adaptador/proxy seleccionado. La duplicación de configuración requiere raw advertisements; metadata no es suficiente.",
+      "not_supported": "Esta acción no está soportada todavía.",
+      "validation_failed": "La configuración se ha abortado porque la validación física falló."
     }
   }
 }
