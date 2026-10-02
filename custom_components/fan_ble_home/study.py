@@ -38,13 +38,13 @@ class BleStudy:
         self.samples.clear()
         self._addresses.clear()
         self.received = 0
-        self.active = True
         self._unsubscribe = bluetooth.async_register_callback(
             self.hass,
             self._receive,
             {"connectable": False},
             bluetooth.BluetoothScanningMode.PASSIVE,
         )
+        self.active = True
         self._timer = asyncio.get_running_loop().call_later(duration, self.stop)
 
     @callback
