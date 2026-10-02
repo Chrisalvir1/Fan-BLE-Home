@@ -37,6 +37,9 @@ async def test_study_lifecycle_and_pseudonymization(hass: HomeAssistant):
         assert study.samples[-1]["source_alias"] == "source_200"
         
         assert study.dropped_due_to_limits == 50
+        assert study.candidates_count == 0  # Unknowns do not increase candidate count
+        assert study.metadata_only_count == 250
+        assert study.raw_available_count == 0
         
         # Stop
         study.stop()
@@ -65,6 +68,7 @@ async def test_study_diagnostics_redaction(hass: HomeAssistant):
     assert sample["source_alias"] == "source_1"
     assert sample["rssi_bucket"] == -50
     assert sample["manufacturer_lengths"] == {"1": 2}
+    assert sample["raw_available"] is False
 
 async def test_study_start_exception(hass: HomeAssistant):
     """Ensure an exception during start doesn't leave study active incorrectly."""
@@ -76,24 +80,39 @@ async def test_study_start_exception(hass: HomeAssistant):
         assert study._timer is None
 
 async def test_strict_mode_filters(hass: HomeAssistant):
-    """Test strict mode ignores unknowns."""
+    """Test strict mode ignores unknowns (even if metadata contains header but no raw)."""
     study = BleStudy(hass)
     study.start(10, sensitivity="strict")
     
+    # Metadata only, no raw
     mock_info_unknown = MagicMock()
     mock_info_unknown.address = "AA:BB:CC:DD:EE:11"
     mock_info_unknown.rssi = -60
-    mock_info_unknown.manufacturer_data = {1: b'\x01\x02'}
+    mock_info_unknown.manufacturer_data = {1: b'\x48\x46\x4B\x4A\x01'}
     mock_info_unknown.service_data = {}
     
-    mock_info_candidate = MagicMock()
-    mock_info_candidate.address = "AA:BB:CC:DD:EE:22"
-    mock_info_candidate.rssi = -60
-    mock_info_candidate.manufacturer_data = {1: b'\x48\x46\x4B\x4A\x01'}
-    mock_info_candidate.service_data = {}
-
     study._receive(mock_info_unknown, None)
-    study._receive(mock_info_candidate, None)
 
-    assert len(study.samples) == 1
-    assert study.samples[0]["candidate_type"] == "zhimei_v1_family_candidate"
+    # Because strict mode drops non-candidates and we no longer mock raw, it should be empty
+    assert len(study.samples) == 0
+    assert study.candidates_count == 0
+    assert study.unique_sources_seen == 0
+    assert study.metadata_only_count == 1
+    assert study.raw_available_count == 0
+
+async def test_raw_available_count_does_not_increase_without_native_raw(hass: HomeAssistant):
+    """Ensure raw counts don't artificially inflate."""
+    study = BleStudy(hass)
+    study.start(10, sensitivity="research")
+    
+    mock_info = MagicMock()
+    mock_info.address = "AA:BB:CC:DD:EE:FF"
+    mock_info.rssi = -50
+    mock_info.manufacturer_data = {1: b'\x48\x46\x4B\x4A'}
+    mock_info.service_data = {}
+    
+    study._receive(mock_info, None)
+    
+    assert study.raw_available_count == 0
+    assert study.metadata_only_count == 1
+    assert study.candidates_count == 0

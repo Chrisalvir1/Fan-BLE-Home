@@ -94,44 +94,19 @@ class BleStudy:
         manufacturer = {str(key): bytes(value).hex() for key, value in info.manufacturer_data.items()}
         service = {str(key): bytes(value).hex() for key, value in info.service_data.items()}
         
-        # Attempt to find true raw bytes if exposed natively by the adapter details
-        # We do not reconstruct them!
+        # Attempt to find true raw bytes if explicitly exposed natively by HA
+        # We strictly do not reconstruct or synthesize them from metadata
         raw_payload = None
-        device_details = getattr(info, "device", None)
-        if device_details:
-            details = getattr(device_details, "details", {})
-            if isinstance(details, dict):
-                # CoreBluetooth or BlueZ might expose some raw data here occasionally,
-                # or via advertisement.
+        
+        # Depending on the adapter or HA version, raw may be passed. Usually it is not.
+        if hasattr(info, "raw_advertisement"):
+            raw_payload = getattr(info, "raw_advertisement")
+        elif hasattr(info, "device") and hasattr(info.device, "details"):
+            details = info.device.details
+            if isinstance(details, dict) and "props" in details:
+                # Some backends might expose it
                 pass
-        
-        # Some versions of HA/Bleak might pass advertisement data object directly
-        advertisement = getattr(info, "advertisement", None)
-        if advertisement and hasattr(advertisement, "manufacturer_data"):
-             # It's still structured, not a single raw byte array.
-             pass
-             
-        # For our Phase 2 definition, unless we have a specific API giving us raw bytes,
-        # we consider it false, UNLESS we treat the values in manufacturer_data as the payload.
-        # Let's inspect the manufacturer_data values directly. 
-        # If the known header is in the raw values of the manufacturer data, we can classify it.
-        # The prompt says: "Prefijos conocidos solo cuando la fuente exponga bytes confiables"
-        
-        raw_signature_found = False
-        known_header = b"\x48\x46\x4B\x4A" # 48 46 4B 4A
-        
-        for value in info.manufacturer_data.values():
-            if known_header in bytes(value):
-                raw_signature_found = True
-                break
                 
-        # To strictly follow the "RawAdvertisementAnalyzer solo opera si hay raw":
-        # We'll consider `raw_payload` as the concatenated manufacturer bytes ONLY for classification,
-        # OR we just pass the first manufacturer value.
-        if raw_signature_found:
-            # We found it in the metadata values directly.
-            raw_payload = known_header # Mocking raw payload presence to trigger the analyzer
-            
         classification = CandidateClassifier.process(
             info.manufacturer_data, 
             info.service_data, 
@@ -159,15 +134,12 @@ class BleStudy:
         
         if is_candidate:
             self.candidates_count += 1
-            
-        c_type = classification["candidate_type"]
-        self._candidate_counts_by_type[c_type] = self._candidate_counts_by_type.get(c_type, 0) + 1
+            c_type = classification["candidate_type"]
+            self._candidate_counts_by_type[c_type] = self._candidate_counts_by_type.get(c_type, 0) + 1
 
         if len(self.samples) >= 200:
             self.dropped_due_to_limits += 1
-            # deque will automatically popleft, so we just append
             
-        # We store redacted info
         self.samples.append({
             "observed_at": datetime.now(timezone.utc).isoformat(),
             "source_alias": source_alias,

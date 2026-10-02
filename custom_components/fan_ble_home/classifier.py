@@ -21,9 +21,7 @@ class MetadataCandidateFilter:
 
     @staticmethod
     def evaluate(manufacturer_data: dict[int, bytes], service_data: dict[str, bytes]) -> bool:
-        """Return True if metadata suggests it could be a candidate."""
-        # For Phase 2, we loosely accept anything with manufacturer data as potential in research mode,
-        # but the real check happens if we have raw bytes.
+        """Return True if metadata suggests it could be worth aggregating."""
         return bool(manufacturer_data or service_data)
 
 
@@ -43,13 +41,23 @@ class RawAdvertisementAnalyzer:
                 "Home Assistant provided metadata only. No raw packet was available, so protocol classification was intentionally not attempted."
             )
         
-        # Check for ZhiMei v1 signature anywhere in the raw payload or specifically at start
-        if RawAdvertisementAnalyzer.ZHIMEI_V1_HEADER in raw_payload:
-            return (
-                CandidateStatus.CANDIDATE_WITH_KNOWN_SIGNATURE,
-                "zhimei_v1_family_candidate",
-                "Observed a known reference header in a native raw advertisement. This does not identify a physical fan, confirm the app, decode commands, or establish control compatibility."
-            )
+        idx = 0
+        while idx < len(raw_payload):
+            length = raw_payload[idx]
+            if length == 0 or idx + 1 + length > len(raw_payload):
+                break
+            ad_type = raw_payload[idx + 1]
+            ad_data = raw_payload[idx + 2 : idx + 1 + length]
+            
+            # AD Type 0xFF is Manufacturer Specific Data
+            if ad_type == 0xFF:
+                if ad_data.startswith(RawAdvertisementAnalyzer.ZHIMEI_V1_HEADER):
+                    return (
+                        CandidateStatus.CANDIDATE_WITH_KNOWN_SIGNATURE,
+                        "zhimei_v1_family_candidate",
+                        "Observed a known reference header at correct offset in a native raw advertisement. This does not identify a physical fan, confirm the app, decode commands, or establish control compatibility."
+                    )
+            idx += 1 + length
             
         return (
             CandidateStatus.UNKNOWN,
@@ -68,42 +76,32 @@ class CandidateClassifier:
     ) -> dict[str, Any]:
         """Process an advertisement and classify it."""
         
-        # Metadata check
-        has_potential = MetadataCandidateFilter.evaluate(manufacturer_data, service_data)
-        if not has_potential:
-            return {
-                "status": CandidateStatus.UNKNOWN.value,
-                "candidate_type": "unknown",
-                "evidence": CandidateEvidence.METADATA_ONLY.value,
-                "confidence": "low",
-                "raw_available": bool(raw_payload),
-                "explanation": "No relevant metadata found."
-            }
-
-        # Raw check
+        has_metadata = MetadataCandidateFilter.evaluate(manufacturer_data, service_data)
+        
         if raw_payload:
             status, ctype, expl = RawAdvertisementAnalyzer.analyze(raw_payload)
             evidence = CandidateEvidence.RAW_SIGNATURE.value if status != CandidateStatus.UNKNOWN else CandidateEvidence.METADATA_ONLY.value
             confidence = "medium" if status == CandidateStatus.CANDIDATE_WITH_KNOWN_SIGNATURE else "low"
-        else:
-            # Maybe the manufacturer data itself starts with the signature?
-            # HA exposes manufacturer_data as { company_identifier: payload }
-            # If the payload contains the header, we can loosely classify it, but the prompt says:
-            # "Prefijos conocidos solo cuando la fuente exponga bytes confiables... Nunca reconstruyas un paquete raw combinando..."
-            # Wait, if manufacturer_data has it, is it raw? 
-            # The prompt says: "RawAdvertisementAnalyzer: Solo opera si el callback entrega explícitamente bytes raw originales."
-            # So if we don't have raw, we return unknown.
-            status = CandidateStatus.UNKNOWN
-            ctype = "unknown"
-            evidence = CandidateEvidence.METADATA_ONLY.value
-            confidence = "low"
-            expl = "Home Assistant provided metadata only. No raw packet was available, so protocol classification was intentionally not attempted."
+            return {
+                "status": status.value,
+                "candidate_type": ctype,
+                "evidence": evidence,
+                "confidence": confidence,
+                "raw_available": True,
+                "explanation": expl
+            }
+
+        # If no native raw is available, we NEVER synthesize it.
+        # Metadata check only produces unknown in Phase 2 because we don't have metadata signatures validated.
+        expl = "Home Assistant provided metadata only. No raw packet was available, so protocol classification was intentionally not attempted."
+        if not has_metadata:
+            expl = "No relevant metadata found and no raw data available."
 
         return {
-            "status": status.value,
-            "candidate_type": ctype,
-            "evidence": evidence,
-            "confidence": confidence,
-            "raw_available": bool(raw_payload),
+            "status": CandidateStatus.UNKNOWN.value,
+            "candidate_type": "unknown",
+            "evidence": CandidateEvidence.METADATA_ONLY.value,
+            "confidence": "low",
+            "raw_available": False,
             "explanation": expl
         }
