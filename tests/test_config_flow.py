@@ -12,7 +12,7 @@ from custom_components.fan_ble_home.const import DOMAIN, CONF_SHARED_CODE, CONF_
 @pytest.fixture(autouse=True)
 def auto_mock_bluetooth():
     """Mock bluetooth scanners to avoid error during setup if needed."""
-    with patch("homeassistant.components.bluetooth.async_current_scanners", return_value=["mock_scanner"]):
+    with patch("homeassistant.components.bluetooth.async_scanner_count", return_value=1):
         yield
 
 async def test_form_valid_input_and_normalization(hass: HomeAssistant):

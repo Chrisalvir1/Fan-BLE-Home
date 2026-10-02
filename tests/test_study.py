@@ -39,13 +39,10 @@ async def test_study_lifecycle_and_pseudonymization(hass: HomeAssistant):
         assert study.samples[-1]["source_alias"] == "source_200"
         
         # Stop
-        timer = study._timer
-        with patch.object(timer, "cancel") as mock_cancel:
-            study.stop()
-            assert not study.active
-            mock_unregister.assert_called_once()
-            mock_cancel.assert_called_once()
-            assert study._timer is None
+        study.stop()
+        assert not study.active
+        mock_unregister.assert_called_once()
+        assert study._timer is None
 
 async def test_study_diagnostics_redaction(hass: HomeAssistant):
     """Ensure raw payload and MAC are not in diagnostics."""

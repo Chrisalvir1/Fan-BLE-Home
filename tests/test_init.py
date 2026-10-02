@@ -42,6 +42,6 @@ async def test_start_study_no_scanners(hass: HomeAssistant):
     entry.add_to_hass(hass)
     await hass.config_entries.async_setup(entry.entry_id)
     
-    with patch("homeassistant.components.bluetooth.async_current_scanners", return_value=[]):
+    with patch("homeassistant.components.bluetooth.async_scanner_count", return_value=0):
         with pytest.raises(HomeAssistantError, match="No Bluetooth scanners are available"):
             await hass.services.async_call(DOMAIN, "start_study", {"duration": 10}, blocking=True)
