@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest pytest-asyncio pytest-homeassistant-custom-component homeassistant
+          pip install pytest pytest-asyncio pytest-homeassistant pyserial-custom-component homeassistant pyserial
       - name: Run pytest
         run: pytest tests/ -v
       - name: Check Python syntax
