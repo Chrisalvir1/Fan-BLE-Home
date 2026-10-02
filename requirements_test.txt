@@ -3,3 +3,5 @@ pytest-asyncio
 pytest-homeassistant-custom-component
 homeassistant
 pyserial
+bleak_retry_connector
+bleak
