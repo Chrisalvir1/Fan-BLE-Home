@@ -4,7 +4,7 @@ Este documento detalla la conclusión corregida de la Fase 2 del proyecto Fan BL
 
 ## 1. SHA Final y PR
 - **Rama:** `feature/phase-2-passive-ble-study`
-- **SHA Final:** (A determinarse en el último commit)
+- **SHA Final:** 43a5566164c2345e0c1eaa7196588c297a0487ef
 - **Pull Request:** [PR #2]
 
 ## 2. Workflows y Resultados
