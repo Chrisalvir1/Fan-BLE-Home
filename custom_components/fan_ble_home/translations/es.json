@@ -3,27 +3,16 @@
   "services": {
     "start_study": {
       "name": "Iniciar Estudio BLE",
-      "description": "Inicia una sesión de observación pasiva y temporal de BLE."
+      "description": "Inicia una sesi\u00f3n de observaci\u00f3n pasiva y temporal de BLE."
     },
     "stop_study": {
       "name": "Detener Estudio BLE",
-      "description": "Detiene manualmente la sesión de observación BLE activa."
+      "description": "Detiene manualmente la sesi\u00f3n de observaci\u00f3n BLE activa."
     }
   },
   "exceptions": {
     "no_scanner": {
-      "message": "Sin escáner Bluetooth disponible"
+      "message": "Sin esc\u00e1ner Bluetooth disponible"
     }
-  },
-  "messages": {
-    "study_started": "Estudio iniciado",
-    "study_stopped": "Estudio detenido",
-    "strict_mode": "Modo estricto",
-    "research_mode": "Modo investigación",
-    "candidate_detected": "Candidato detectado",
-    "no_candidates": "No hay candidatos",
-    "no_raw_data": "Datos raw no disponibles",
-    "no_control_yet": "Aún no existe control del ventilador",
-    "experimental_phase": "Fase experimental"
   }
 }

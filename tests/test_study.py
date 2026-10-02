@@ -7,7 +7,8 @@ from homeassistant.core import HomeAssistant
 from custom_components.fan_ble_home.study import BleStudy
 from custom_components.fan_ble_home.classifier import CandidateStatus, CandidateEvidence, Sensitivity
 
-async def test_study_lifecycle_and_pseudonymization(hass: HomeAssistant):
+@patch("homeassistant.components.bluetooth.async_scanner_count", return_value=1)
+async def test_study_lifecycle_and_pseudonymization(mock_count, hass: HomeAssistant):
     """Test start, receive (with pseudonymization and buffer limits), stop."""
     study = BleStudy(hass)
     assert not study.active
@@ -46,7 +47,8 @@ async def test_study_lifecycle_and_pseudonymization(hass: HomeAssistant):
         assert not study.active
         mock_unregister.assert_called_once()
 
-async def test_study_diagnostics_redaction(hass: HomeAssistant):
+@patch("homeassistant.components.bluetooth.async_scanner_count", return_value=1)
+async def test_study_diagnostics_redaction(mock_count, hass: HomeAssistant):
     """Ensure raw payload and MAC are not in diagnostics."""
     study = BleStudy(hass)
     study.start(10, sensitivity="research")
@@ -79,7 +81,8 @@ async def test_study_start_exception(hass: HomeAssistant):
         assert not study.active
         assert study._timer is None
 
-async def test_strict_mode_filters(hass: HomeAssistant):
+@patch("homeassistant.components.bluetooth.async_scanner_count", return_value=1)
+async def test_strict_mode_filters(mock_count, hass: HomeAssistant):
     """Test strict mode ignores unknowns (even if metadata contains header but no raw)."""
     study = BleStudy(hass)
     study.start(10, sensitivity="strict")
@@ -100,7 +103,8 @@ async def test_strict_mode_filters(hass: HomeAssistant):
     assert study.metadata_only_count == 1
     assert study.raw_available_count == 0
 
-async def test_raw_available_count_does_not_increase_without_native_raw(hass: HomeAssistant):
+@patch("homeassistant.components.bluetooth.async_scanner_count", return_value=1)
+async def test_raw_available_count_does_not_increase_without_native_raw(mock_count, hass: HomeAssistant):
     """Ensure raw counts don't artificially inflate."""
     study = BleStudy(hass)
     study.start(10, sensitivity="research")

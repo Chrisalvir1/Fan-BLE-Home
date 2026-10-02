@@ -14,16 +14,5 @@
     "no_scanner": {
       "message": "No Bluetooth scanners are available"
     }
-  },
-  "messages": {
-    "study_started": "Study started",
-    "study_stopped": "Study stopped",
-    "strict_mode": "Strict mode",
-    "research_mode": "Research mode",
-    "candidate_detected": "Candidate detected",
-    "no_candidates": "No candidates found",
-    "no_raw_data": "Raw data not available",
-    "no_control_yet": "Fan control does not exist yet",
-    "experimental_phase": "Experimental phase"
   }
 }
