@@ -1,26 +1,15 @@
 # Protocol Status
 
-The integration categorizes support into formal states:
+## Evidence States
+- `unknown`: No signature matched.
+- `candidate`: Metadata hints at a match, but no raw confirmation.
+- `candidate_with_known_signature`: Structural header confirmed in raw payload. (Max state in Phase 2)
+- `decoded_unverified`: Not implemented yet.
+- `code_matched`: Not implemented yet.
+- `control_tested`: Not implemented yet.
+- `control_verified`: Not implemented yet.
 
-1. **configuration_only:** Parses user configuration but makes no BLE connections.
-2. **passive_observation:** Listens to BLE advertisements but doesn't decode controls.
-3. **candidate_detection:** Detects possible matching fans based on known BLE structural hints.
-4. **protocol_decoded:** Accurately decodes incoming and outgoing control commands without physical verification.
-5. **control_tested:** Tested successfully on a limited subset of devices.
-6. **control_verified:** Confirmed working securely with optimistic state and checksums fully validated.
-
-**Current integration state:** `configuration_only` / `passive_observation`.
-
-## Target Protocols
-
-### ZhiKong Pro (Daminy & Compatible)
-- **Status:** Under research.
-- **Goal:** Primary initial target. The shared code format is a tuple of 5 bytes.
-
-### ZhiMei / Smart Light
-- **Status:** Planned protocol profile.
-- **Notes:** Contains multiple variants (v1, v1b, vr0, vr1) which must be uniquely identified.
-
-### FanLamp Pro
-- **Status:** Planned protocol profile.
-- **Notes:** Kept entirely separate from ZhiKong Pro to avoid protocol collision.
+## Supported Families
+- **ZhiMei v1 / fan v1**: `structural candidate detection only` (Phase 2 capability).
+- **ZhiKong Pro**: `research only` (No formal candidate signature applied natively yet beyond shared base).
+- **FanLamp Pro**: `not started`.

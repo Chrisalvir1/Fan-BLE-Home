@@ -1,23 +1,18 @@
 {
   "title": "Fan BLE Home",
-  "config": {
-    "step": {
-      "user": {
-        "title": "Guardar configuración experimental",
-        "description": "Solo configuración: todavía no descubre, empareja ni controla por BLE y no crea entidades. Introduce cinco valores separados por comas (0–255). Su significado en el protocolo no está verificado. No publiques tu código compartido.",
-        "data": {
-          "name": "Nombre de la configuración",
-          "shared_code": "Código compartido (cinco valores separados por comas)",
-          "serial_number": "Número de serie físico (opcional)"
-        }
-      }
+  "services": {
+    "start_study": {
+      "name": "Iniciar Estudio BLE",
+      "description": "Inicia una sesi\u00f3n de observaci\u00f3n pasiva y temporal de BLE."
     },
-    "error": {
-      "invalid_code": "Introduce exactamente cinco enteros entre 0 y 255 separados por comas.",
-      "invalid_name": "Introduce un nombre no vacío."
-    },
-    "abort": {
-      "already_configured": "Este código compartido ya está guardado."
+    "stop_study": {
+      "name": "Detener Estudio BLE",
+      "description": "Detiene manualmente la sesi\u00f3n de observaci\u00f3n BLE activa."
+    }
+  },
+  "exceptions": {
+    "no_scanner": {
+      "message": "Sin esc\u00e1ner Bluetooth disponible"
     }
   }
 }
