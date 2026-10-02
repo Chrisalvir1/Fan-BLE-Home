@@ -40,13 +40,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             }),
         )
         hass.services.async_register(DOMAIN, "stop_study", stop, schema=vol.Schema({}))
+    
     data["entries"].add(entry.entry_id)
+    await hass.config_entries.async_forward_entry_setups(entry, ["fan", "light"])
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Release shared resources after the final entry is unloaded."""
     data = hass.data.get(DOMAIN)
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, ["fan", "light"])
+    
     if data is not None:
         data["entries"].discard(entry.entry_id)
         if not data["entries"]:
@@ -54,4 +58,5 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass.services.async_remove(DOMAIN, "start_study")
             hass.services.async_remove(DOMAIN, "stop_study")
             hass.data.pop(DOMAIN)
-    return True
+            
+    return unload_ok

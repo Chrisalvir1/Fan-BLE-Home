@@ -10,8 +10,18 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigE
     """Return bounded metadata without exposing stored control data."""
     data = hass.data.get(DOMAIN, {})
     study = data.get("study")
+    
+    # Safely redact config data
+    redacted_data = {}
+    for k, v in entry.data.items():
+        if k in ["id", "seed", "index", "shared_code", "serial", "mac"]:
+            redacted_data[k] = "***REDACTED***"
+        else:
+            redacted_data[k] = v
+
     return {
-        "protocol_verified": False,
-        "control_supported": False,
+        "protocol_verified": entry.data.get("verified", False),
+        "control_supported": entry.data.get("verified", False),
+        "config_data": redacted_data,
         "study": study.diagnostics() if study else {"active": False},
     }
