@@ -20,7 +20,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         async def start(call: ServiceCall) -> None:
             from homeassistant.components import bluetooth
 
-            if not bluetooth.async_current_scanners(hass):
+            if bluetooth.async_scanner_count(hass, connectable=False) == 0:
                 raise HomeAssistantError("No Bluetooth scanners are available")
             data["study"].start(call.data["duration"])
 

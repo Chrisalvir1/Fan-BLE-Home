@@ -1,0 +1,10 @@
+pytest
+pytest-asyncio
+pytest-homeassistant-custom-component
+homeassistant
+pyserial
+bleak_retry_connector
+bleak
+bluetooth_auto_recovery
+bluetooth_data_tools
+bluetooth_adapters

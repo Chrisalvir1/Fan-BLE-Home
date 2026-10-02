@@ -1,29 +1,32 @@
 # Fan BLE Home
 
-Experimental Home Assistant custom integration for local BLE fans and lights.
+Home Assistant custom integration for local Bluetooth Low Energy ceiling fans and lights.
 
 ## Status
 
-Version 0.1.0-alpha.1 is a configuration scaffold, not a working fan controller. It does not transmit BLE commands, discover fans, decode barcode images or create control entities.
+**Current phase:** `configuration_only` / `passive_observation`
 
-The initial config flow stores a manually entered shared code and an optional physical serial number. The meaning of the shared-code fields is not yet verified. Importing a code does not prove successful pairing or control.
+Version 0.1.0-alpha.2 is a structural scaffold and study tool. It does **not** transmit BLE commands, decode barcode images, or create control entities (like fans, lights, or switches).
+
+The current integration features:
+- A config flow that stores a manually entered shared code and an optional physical serial number.
+- A local bounded BLE study service to passively observe changed advertisements without claiming device control or logging sensitive payloads.
+
+The project is currently researching ZhiKong Pro and Daminy-compatible protocols.
 
 ## Installation for development
 
-Add this repository to HACS as an Integration custom repository, download it, restart Home Assistant and add Fan BLE Home under Settings > Devices & services. Manual installation: copy custom_components/fan_ble_home into your Home Assistant custom_components directory and restart.
+Add this repository to HACS as an Integration custom repository, download it, restart Home Assistant and add Fan BLE Home under Settings > Devices & services. Manual installation: copy `custom_components/fan_ble_home` into your Home Assistant `custom_components` directory and restart.
 
-## Roadmap
+## Architecture & Protocol Status
 
-- Validate ZhiKong-compatible shared-code mapping against captured BLE commands.
-- Implement local BLE transmission using supported host adapters, including Raspberry Pi 5 where available.
-- Add listening-based discovery; do not assume a receiving-only fan broadcasts its identity.
-- Implement verified fan/light capabilities and explicit optimistic-state handling.
-- Add QR/barcode image import after determining supported payload formats.
-- Study FanLamp Pro separately.
+Please read the accompanying documentation for deep technical details:
+- [docs/architecture.md](docs/architecture.md)
+- [docs/protocol-status.md](docs/protocol-status.md)
 
-## Privacy and identity
+## Privacy and Identity
 
-Shared codes may grant control access. Do not publish your real codes in issues or logs. Physical serial numbers are optional and must never be hardcoded for every device. A shared code may identify a controller or group rather than a unique physical fan; this remains under investigation.
+Shared codes may grant control access. **Do not publish your real codes in issues or logs.** Physical serial numbers are optional and must never be hardcoded for every device.
 
 ## License
 
