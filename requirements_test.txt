@@ -1,5 +1,5 @@
-pytest<8.0.0
-pytest-asyncio<0.23.0
-pytest-homeassistant-custom-component==0.12.49
+pytest
+pytest-asyncio
+pytest-homeassistant-custom-component
 homeassistant
-pyserial>=3.5
+pyserial
