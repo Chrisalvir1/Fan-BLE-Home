@@ -1,23 +1,21 @@
 # Architecture
 
-Fan BLE Home is structured as a standard Home Assistant custom component, prioritizing local-only, protocol-safe Bluetooth Low Energy communication without cloud dependencies.
+Fan BLE Home is designed to use the native Home Assistant Bluetooth stack.
 
-## Design Philosophy
+## Phase 2: Passive Observation and Classification
+In Phase 2, the integration implements a strictly passive study mode.
 
-- **Local Only:** All interactions occur directly over BLE using Home Assistant's built-in Bluetooth API. No ESP32 is mandatory if the HA host has BLE.
-- **Evidence-Based Integration:** Entities are not created unless their underlying BLE protocol behavior is known, mapped, and tested.
-- **Privacy-First Diagnostics:** Internal diagnostics and study modes deliberately redact actual MAC addresses, shared codes, serials, and exact BLE payloads to prevent accidental leaks.
-- **State Optimism:** Because many BLE fans do not report their state reliably, the integration depends on optimistic state updates.
+### 1. Metadata vs Raw
+Home Assistant provides metadata natively (`manufacturer_data`, `service_data`). However, full RAW advertisement bytes are not guaranteed on all adapters or HA OS setups.
+- **MetadataCandidateFilter**: Triggers loosely on any data to keep research summaries active without needing raw bytes.
+- **RawAdvertisementAnalyzer**: Only triggers when raw bytes are available (or securely mock-exposed via specific manufacturer structures) to identify structural signatures like `48 46 4B 4A`. We NEVER rebuild a raw packet by artificially merging metadata arrays.
 
-## Component Structure
+### 2. Privacy, Limits and Filters
+- **Pseudonymization**: Devices are aliased as `source_1`, `source_2`. Real MAC addresses are dropped immediately.
+- **Memory Limits**: The internal buffer enforces a hard limit of 200 sources and 200 samples. Once exceeded, further entries are counted under `dropped_due_to_limits`.
+- **Sensitivities**:
+  - `strict`: Rejects anything not structurally matching a known candidate.
+  - `research`: Aggregates metadata for debugging but strips payloads.
 
-- `__init__.py`: Handles integration setup, lifecycle, and shared resources like the study mode.
-- `config_flow.py`: Accepts manual shared-code imports, ensuring no duplicate codes exist.
-- `shared_code.py`: A strict structural parser for user-entered shared codes.
-- `study.py`: An active observer that buffers BLE advertisements without assuming device identity.
-- `advertisement.py`: Parser and protocol-hint generator for BLE manufacturer and service data.
-- `diagnostics.py`: Safely exports metadata for debugging without exposing secrets.
-
-## Extensibility
-
-In the future, a `protocol/` module will handle the parsing, decoding, and encoding of different BLE fan families (e.g., ZhiKong Pro, FanLamp Pro).
+### 3. Signatures Do Not Equal Identity
+A detected structural signature (e.g., `ZhiMei v1`) DOES NOT mean a specific brand or model is found. It simply indicates the packet structure matches a family. This prevents false positive pairings and ensures the decoder will have the right schema.

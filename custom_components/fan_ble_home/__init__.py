@@ -8,6 +8,7 @@ from homeassistant.exceptions import HomeAssistantError
 
 from .const import DOMAIN
 from .study import BleStudy
+from .classifier import Sensitivity
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -22,14 +23,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
             if bluetooth.async_scanner_count(hass, connectable=False) == 0:
                 raise HomeAssistantError("No Bluetooth scanners are available")
-            data["study"].start(call.data["duration"])
+            
+            duration = call.data.get("duration", 60)
+            sensitivity = call.data.get("sensitivity", Sensitivity.STRICT.value)
+            
+            data["study"].start(duration, sensitivity)
 
         async def stop(call: ServiceCall) -> None:
-            data["study"].stop()
+            data["study"].stop("manual")
 
         hass.services.async_register(
             DOMAIN, "start_study", start,
-            schema=vol.Schema({vol.Optional("duration", default=60): vol.All(vol.Coerce(int), vol.Range(min=10, max=300))}),
+            schema=vol.Schema({
+                vol.Optional("duration", default=60): vol.All(vol.Coerce(int), vol.Range(min=10, max=300)),
+                vol.Optional("sensitivity", default=Sensitivity.STRICT.value): vol.In([Sensitivity.STRICT.value, Sensitivity.RESEARCH.value])
+            }),
         )
         hass.services.async_register(DOMAIN, "stop_study", stop, schema=vol.Schema({}))
     data["entries"].add(entry.entry_id)
@@ -42,7 +50,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if data is not None:
         data["entries"].discard(entry.entry_id)
         if not data["entries"]:
-            data["study"].stop()
+            data["study"].stop("reload")
             hass.services.async_remove(DOMAIN, "start_study")
             hass.services.async_remove(DOMAIN, "stop_study")
             hass.data.pop(DOMAIN)

@@ -1,23 +1,29 @@
 {
   "title": "Fan BLE Home",
-  "config": {
-    "step": {
-      "user": {
-        "title": "Store experimental fan configuration",
-        "description": "Configuration only: no BLE discovery, pairing, transmission or entities yet. Enter five comma-separated values (0–255). Their protocol meaning is not verified. Do not publish your shared code.",
-        "data": {
-          "name": "Configuration name",
-          "shared_code": "Shared code (five comma-separated values)",
-          "serial_number": "Physical serial number (optional)"
-        }
-      }
+  "services": {
+    "start_study": {
+      "name": "Start BLE Study",
+      "description": "Start a temporary, passive BLE observation session."
     },
-    "error": {
-      "invalid_code": "Enter exactly five comma-separated integers between 0 and 255.",
-      "invalid_name": "Enter a non-empty name."
-    },
-    "abort": {
-      "already_configured": "This shared code is already stored."
+    "stop_study": {
+      "name": "Stop BLE Study",
+      "description": "Manually stop the active BLE observation session."
     }
+  },
+  "exceptions": {
+    "no_scanner": {
+      "message": "No Bluetooth scanners are available"
+    }
+  },
+  "messages": {
+    "study_started": "Study started",
+    "study_stopped": "Study stopped",
+    "strict_mode": "Strict mode",
+    "research_mode": "Research mode",
+    "candidate_detected": "Candidate detected",
+    "no_candidates": "No candidates found",
+    "no_raw_data": "Raw data not available",
+    "no_control_yet": "Fan control does not exist yet",
+    "experimental_phase": "Experimental phase"
   }
 }
