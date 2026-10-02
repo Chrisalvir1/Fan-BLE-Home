@@ -4,6 +4,9 @@ import pytest
 
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.core import HomeAssistant
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
 from custom_components.fan_ble_home.const import DOMAIN, CONF_SHARED_CODE, CONF_SERIAL_NUMBER
 
 @pytest.fixture(autouse=True)
@@ -12,8 +15,8 @@ def auto_mock_bluetooth():
     with patch("homeassistant.components.bluetooth.async_current_scanners", return_value=["mock_scanner"]):
         yield
 
-async def test_form_valid_input(hass):
-    """Test we get the form and create an entry."""
+async def test_form_valid_input_and_normalization(hass: HomeAssistant):
+    """Test valid format, normalization, and optional serial."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
@@ -23,21 +26,21 @@ async def test_form_valid_input(hass):
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"],
         {
-            "name": "My Fan",
-            CONF_SHARED_CODE: "76, 176, 219, 111, 5",
-            CONF_SERIAL_NUMBER: "12345",
+            "name": "Mock Fan",
+            CONF_SHARED_CODE: " [010, 020, 030, 040, 050] ",
+            CONF_SERIAL_NUMBER: " 99999 ",
         },
     )
     assert result2["type"] == FlowResultType.CREATE_ENTRY
-    assert result2["title"] == "My Fan"
+    assert result2["title"] == "Mock Fan"
     assert result2["data"] == {
-        "name": "My Fan",
-        CONF_SHARED_CODE: "76,176,219,111,5",
-        CONF_SERIAL_NUMBER: "12345",
+        "name": "Mock Fan",
+        CONF_SHARED_CODE: "10,20,30,40,50",
+        CONF_SERIAL_NUMBER: "99999",
         "protocol_verified": False,
     }
 
-async def test_form_invalid_code(hass):
+async def test_form_invalid_code(hass: HomeAssistant):
     """Test we handle invalid shared code."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
@@ -45,24 +48,48 @@ async def test_form_invalid_code(hass):
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"],
         {
-            "name": "My Fan",
-            CONF_SHARED_CODE: "invalid",
+            "name": "Mock Fan",
+            CONF_SHARED_CODE: "not,a,valid,code",
         },
     )
     assert result2["type"] == FlowResultType.FORM
     assert result2["errors"] == {CONF_SHARED_CODE: "invalid_code"}
 
-async def test_form_duplicate(hass):
-    """Test that duplicate shared codes are rejected."""
-    # First entry
-    await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": config_entries.SOURCE_USER},
-        data={"name": "Fan 1", CONF_SHARED_CODE: "1,2,3,4,5"}
+async def test_form_empty_name(hass: HomeAssistant):
+    """Test we handle empty name."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
+    result2 = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {
+            "name": "   ",
+            CONF_SHARED_CODE: "10,20,30,40,50",
+        },
+    )
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"name": "invalid_name"}
+
+async def test_form_duplicate(hass: HomeAssistant):
+    """Test that duplicate shared codes are rejected."""
+    # First entry directly via MockConfigEntry
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Mock Fan 1",
+        data={
+            "name": "Mock Fan 1",
+            CONF_SHARED_CODE: "10,20,30,40,50",
+            CONF_SERIAL_NUMBER: "",
+            "protocol_verified": False,
+        },
+        unique_id="shared_code:10,20,30,40,50"
+    )
+    entry.add_to_hass(hass)
+
     # Second entry
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER},
-        data={"name": "Fan 2", CONF_SHARED_CODE: "[001, 2, 3, 4, 5]"}
+        data={"name": "Mock Fan 2", CONF_SHARED_CODE: "[010, 20, 30, 40, 50]"}
     )
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "already_configured"
