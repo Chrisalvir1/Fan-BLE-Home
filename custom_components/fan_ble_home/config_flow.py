@@ -52,9 +52,12 @@ class FanBleHomeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         if user_input is not None:
-            if user_input["action"] == "duplicate_zhikong":
-                return await self.async_step_duplicate_check_backend()
-            return await self.async_step_manual()
+            if "action" in user_input:
+                if user_input["action"] == "duplicate_zhikong":
+                    return await self.async_step_duplicate_check_backend()
+                return await self.async_step_manual()
+            else:
+                return await self.async_step_manual(user_input)
 
         return self.async_show_form(
             step_id="user",

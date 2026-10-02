@@ -116,6 +116,7 @@ async def test_echo_loop_prevention_and_update(hass: HomeAssistant):
     entry.title = "Test Fan"
     
     fan = ZhiKongProFan(hass, entry)
+    fan.entity_id = "fan.test_fan"
     
     # Simulate valid external adv
     adv1 = RawAdvertisement("s1", 1.0, -50, "hci0", b"external_bytes")

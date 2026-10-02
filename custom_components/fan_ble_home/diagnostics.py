@@ -14,7 +14,7 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigE
     # Safely redact config data
     redacted_data = {}
     for k, v in entry.data.items():
-        if k in ["id", "seed", "index", "shared_code", "serial", "serial_number", "mac"]:
+        if k in ["id", "seed", "index", "shared_code", "serial", "serial_number", "mac", "name"]:
             redacted_data[k] = "***REDACTED***"
         else:
             redacted_data[k] = v
